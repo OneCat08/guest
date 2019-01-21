@@ -14,7 +14,8 @@ class Event(models.Model):
         return self.name
 # 嘉宾表
 class Guest(models.Model):
-    event = models.ForeignKey(Event) #关联发布会id
+    # 注意这里
+    event = models.ForeignKey(Event,on_delete=models.DO_NOTHING,) #关联发布会id
     realname = models.CharField(max_length=64)  #姓名
     phone = models.CharField(max_length=16) # 手机号
     email = models.EmailField() # 邮箱
@@ -22,6 +23,7 @@ class Guest(models.Model):
     create_time = models.DateField(auto_now=True) # 创建时间 （自动获取当前时间）
 
     class Meta:
+        # 设置两个字段为联合主键
         unique_together = ('event', 'phone')
 
     def __str__(self):
