@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from sign.models import Event
 # Create your views here.
 
 def index(request): # 创建路由匹配的视图函数
@@ -27,7 +28,17 @@ def login_action(request):
 # 发布会管理
 @login_required # 限制该视图必须登录后才能访问
 def event_manage(request):
+    event_list = Event.objects.all() #查询素有发布会的数据
     # username = request.COOKIES.get('user', '') # 读取浏览器cookie
     username = request.session.get('user', '') # 读取浏览器session
-    return render(request, 'event_manage.html', {'user':username})
+    return render(request, 'event_manage.html', {'user': username,
+                                                 'events': event_list}) # 返给客户端
 
+# 发布会名称搜索
+@login_required
+def search_name(request):
+    username = request.session.get('user', '')
+    search_name = request.GET.get('name', '')
+    event_list = Event.objects.filter(name__contains=search_name)
+    return render(request, 'event_manage.html', {'user': username,
+                                                 'events': event_list})
