@@ -3,6 +3,8 @@ from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from sign.models import Event, Guest
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import render, get_object_or_404
 # Create your views here.
 
 def index(request): # 创建路由匹配的视图函数
@@ -28,11 +30,11 @@ def login_action(request):
 # 发布会管理
 @login_required # 限制该视图必须登录后才能访问
 def event_manage(request):
-    event_list = Event.objects.all() #查询素有发布会的数据
-    # username = request.COOKIES.get('user', '') # 读取浏览器cookie
-    username = request.session.get('user', '') # 读取浏览器session
+    event_list = Event.objects.all() #查询所有发布会的数据
+    # username = request.COOKIES.get('user', '')  # 读取浏览器cookie
+    username = request.session.get('user', '')  # 读取浏览器session
     return render(request, 'event_manage.html', {'user': username,
-                                                 'events': event_list}) # 返给客户端
+                                                 'events': event_list})  # 返给客户端
 
 # 发布会名称搜索
 @login_required
@@ -46,6 +48,22 @@ def search_name(request):
 @login_required
 def guest_manage(request):
     username = request.session.get('user', '')
-    guest_list = Guest.objects.all()
+    guest_list = Guest.objects.all()  # 查询Guest表的所有数据
+    paginator = Paginator(guest_list, 2)  # 创建每页2条数据的分页器
+    page = request.GET.get('page')  # 通过get请求得到当前要显示第几页的数据
+    try:
+        contacts = paginator.page(page)  # 获取页面数据
+    except PageNotAnInteger:
+        # 如果page不是整数，取第一页面的数据
+        contacts = paginator.page(1)
+    except EmptyPage:
+        # 如果page不在范围，取最后一页的数据
+        contacts = paginator.page(paginator.num_pages)
     return render(request, 'guest_manage.html', {'user': username,
-                                                 'guests': guest_list})
+                                                 'guests': contacts})
+
+# 签到页面
+@login_required
+def sign_index(request, eid):  # 获取URL配置得到eid，作为发布会的id查询条件
+    event = get_object_or_404(Event, id=eid)
+    return render(request, 'sign_index.html', {'event': event})
