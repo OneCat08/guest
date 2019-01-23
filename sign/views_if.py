@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from sign.models import Event, Guest
-from django.core.exceptions import ValidationError,ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.utils import IntegrityError
 import time
 
@@ -207,4 +207,3 @@ def user_sign(request):
     else:
         Guest.objects.filter(event_id=eid, phone=phone).update(sign='1')
         return JsonResponse({'status': 200, 'message': 'sign success'})
-    
